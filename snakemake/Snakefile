@@ -1,0 +1,54 @@
+try:
+    import pygpseq
+except ImportError as e:
+    raise Exception("Missing `pygpseq`. Please install it with `pip3 install pygpseq`.")
+
+
+rule all:
+    input:
+        expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
+
+rule oof_detection:
+    input:
+        lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
+    output:
+        "%s/{sample}.pdf" % config['oof_folder']
+    params:
+        imdir = "%s/{sample}" % config['deconvolved_root_folder'],
+        outdir = config['oof_folder'],
+        output = "%s/{sample}.tsv" % config['oof_folder']
+    threads: 1
+    shell: """
+        mkdir -p {params.outdir}
+        tiff_findoof -PR {params.imdir} {params.output}
+    """
+
+rule fromfish:
+    input:
+        lambda wildcards: expand([
+                "%s/%s.pdf" % (config['oof_folder'], wildcards.sample),
+                "%s/%s_auto_userdots.csv" % (config['auto_userdots_folder'], wildcards.sample),
+                "%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample)
+            ])
+    output:
+        "%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation'])
+    params:
+        dot_coords = "%s/{sample}_auto_userdots.csv" % config['auto_userdots_folder'],
+        imdir = "%s/{sample}/" % (config['deconvolved_root_folder']),
+        outdir = "%s/{sample}/" % config['fromfish_folder'],
+        dilation = config['dilation'],
+        aspect = " ".join([str(x) for x in config['aspect']]),
+        distance_type = config['distance_type'],
+        mask_params = "-M '%s/{sample}/' -m '%s'" % (config["masks_root_folder"], config['mask_prefix']) if type(None) != type(config["masks_root_folder"]) else "",
+        compressed = "--compressed" if config['mask_compressed'] else "",
+        labeled = "--labeled" if config['mask_labeled'] else "",
+        axis_fraction = config['axis_fraction'],
+        discard_channels = " ".join(config['discard_channels']),
+        dilate_Z = "--dilate-Z" if config['dilate_Z'] else ""
+    threads: config['threads_per_job']
+    shell: """
+        mkdir -p {params.outdir}
+        gpseq_fromfish -a {params.aspect} -D {params.dilation} --dist-type {params.distance_type} -t {threads} \
+            {params.mask_params} {params.compressed} {params.labeled} -P {params.axis_fraction} -C {params.discard_channels} \
+            {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}'
+    """
