@@ -35,14 +35,18 @@ rule Automatic_3D_segmentation:
         lambda wildcards: expand("%s/%s.pdf" % (config['oof_folder'], wildcards.sample))
     output:
         "%s/{sample}/" % config['masks_root_folder']
+    log:
+        "%s/{sample}/snakemake.log" % config['masks_root_folder']
     params:
         imdir = "%s/{sample}/" % config['deconvolved_root_folder'],
         outdir = "%s/{sample}/" % config['masks_root_folder'],
         compressed = "--compressed" if config['mask_compressed'] else "",
         labeled = "--labeled" if config['mask_labeled'] else ""
     threads: config['threads_per_job']
-    shell:
-        "tiff_auto3dseg {params.compressed} {params.labeled} {params.imdir} {params.outdir}"
+    shell: """
+        mkdir -p {params.outdir}
+        tiff_auto3dseg -t {threads} {params.compressed} {params.labeled} {params.imdir} {params.outdir} &> {log}
+    """
 
 rule Lamina_distance_calculation:
     version: GPSEQ_FROMFISH_VERSION
@@ -98,6 +102,7 @@ rule merge:
         sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
     threads: 100
     shell: """
+        mkdir -p {params.outdir}
         gpseq_fromfish_merge --no-date -t {threads} \
             -m {params.meta} -i {params.indir} -o {params.outdir} \
             -a {params.aspect} {params.sep} &> {log}
