@@ -6,10 +6,11 @@ except ImportError as e:
 TIFF_FINDOOF_VERSION = subprocess.check_output("tiff_findoof --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 TIFF_AUTO3DSEG_VERSION = subprocess.check_output("tiff_auto3dseg --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 GPSEQ_FROMFISH_VERSION = subprocess.check_output("gpseq_fromfish --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+GPSEQ_FROMFISH_MERGE_VERSION = subprocess.check_output("gpseq_fromfish_merge --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 rule all:
     input:
-        expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
+        "%s/dots.merged.tsv" % config['merge_folder']
 
 rule OOF_Detection:
     version: TIFF_FINDOOF_VERSION
@@ -74,4 +75,30 @@ rule Lamina_distance_calculation:
         gpseq_fromfish -a {params.aspect} -D {params.dilation} --dist-type {params.distance_type} -t {threads} \
             {params.mask_params} {params.compressed} {params.labeled} -P {params.axis_fraction} -C {params.discard_channels} \
             {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}' -y &> {log}
+    """
+
+rule merge:
+    version: GPSEQ_FROMFISH_MERGE_VERSION
+    input:
+        expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
+    output:
+        "%s/copies.merged.tsv" % config['merge_folder'],
+        "%s/density_profile.merged.tsv" % config['merge_folder'],
+        "%s/dots.merged.tsv" % config['merge_folder'],
+        "%s/ncomps.merged.tsv" % config['merge_folder'],
+        "%s/nuclei.merged.tsv" % config['merge_folder'],
+        "%s/volume_profile.merged.tsv" % config['merge_folder']
+    log:
+        "%s/gpseq_fromfish_merge.log" % config['merge_folder']
+    params:
+        meta = config['metadata'],
+        indir = config['fromfish_folder'],
+        outdir = config['merge_folder'],
+        aspect = " ".join([str(x) for x in config['aspect']]),
+        sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
+    threads: 100
+    shell: """
+        gpseq_fromfish_merge --no-date -t {threads} \
+            -m {params.meta} -i {params.indir} -o {params.outdir} \
+            -a {params.aspect} {params.sep} &> {log}
     """
