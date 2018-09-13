@@ -3,12 +3,15 @@ try:
 except ImportError as e:
     raise Exception("Missing `pygpseq`. Please install it with `pip3 install pygpseq`.")
 
+GPSEQ_FROMFISH_VERSION = subprocess.check_output("gpseq_fromfish --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+TIFF_FINDOOF_VERSION = subprocess.check_output("tiff_findoof --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 rule all:
     input:
         expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
 
 rule oof_detection:
+    version: TIFF_FINDOOF_VERSION
     input:
         lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
     output:
@@ -24,6 +27,7 @@ rule oof_detection:
     """
 
 rule fromfish:
+    version: GPSEQ_FROMFISH_VERSION
     input:
         lambda wildcards: expand([
                 "%s/%s.pdf" % (config['oof_folder'], wildcards.sample),
@@ -32,6 +36,8 @@ rule fromfish:
             ])
     output:
         "%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation'])
+    log:
+        "%s/{sample}/snakemake.log" % config['fromfish_folder']
     params:
         dot_coords = "%s/{sample}_auto_userdots.csv" % config['auto_userdots_folder'],
         imdir = "%s/{sample}/" % (config['deconvolved_root_folder']),
@@ -50,5 +56,5 @@ rule fromfish:
         mkdir -p {params.outdir}
         gpseq_fromfish -a {params.aspect} -D {params.dilation} --dist-type {params.distance_type} -t {threads} \
             {params.mask_params} {params.compressed} {params.labeled} -P {params.axis_fraction} -C {params.discard_channels} \
-            {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}'
+            {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}' -y &> {log}
     """
