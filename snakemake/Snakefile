@@ -3,14 +3,15 @@ try:
 except ImportError as e:
     raise Exception("Missing `pygpseq`. Please install it with `pip3 install pygpseq`.")
 
-GPSEQ_FROMFISH_VERSION = subprocess.check_output("gpseq_fromfish --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 TIFF_FINDOOF_VERSION = subprocess.check_output("tiff_findoof --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+TIFF_AUTO3DSEG_VERSION = subprocess.check_output("tiff_auto3dseg --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+GPSEQ_FROMFISH_VERSION = subprocess.check_output("gpseq_fromfish --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 rule all:
     input:
         expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
 
-rule oof_detection:
+rule OOF_Detection:
     version: TIFF_FINDOOF_VERSION
     input:
         lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
@@ -26,11 +27,27 @@ rule oof_detection:
         tiff_findoof -PR {params.imdir} {params.output}
     """
 
-rule fromfish:
+
+rule Automatic_3D_segmentation:
+    version: TIFF_AUTO3DSEG_VERSION
+    input:
+        lambda wildcards: expand("%s/%s.pdf" % (config['oof_folder'], wildcards.sample))
+    output:
+        "%s/{sample}/" % config['masks_root_folder']
+    params:
+        imdir = "%s/{sample}/" % config['deconvolved_root_folder'],
+        outdir = "%s/{sample}/" % config['masks_root_folder'],
+        compressed = "--compressed" if config['mask_compressed'] else "",
+        labeled = "--labeled" if config['mask_labeled'] else ""
+    threads: config['threads_per_job']
+    shell:
+        "tiff_auto3dseg {params.compressed} {params.labeled} {params.imdir} {params.outdir}"
+
+rule Lamina_distance_calculation:
     version: GPSEQ_FROMFISH_VERSION
     input:
         lambda wildcards: expand([
-                "%s/%s.pdf" % (config['oof_folder'], wildcards.sample),
+                "%s/%s/" % (config['masks_root_folder'], wildcards.sample),
                 "%s/%s_auto_userdots.csv" % (config['auto_userdots_folder'], wildcards.sample),
                 "%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample)
             ])
@@ -45,7 +62,7 @@ rule fromfish:
         dilation = config['dilation'],
         aspect = " ".join([str(x) for x in config['aspect']]),
         distance_type = config['distance_type'],
-        mask_params = "-M '%s/{sample}/' -m '%s'" % (config["masks_root_folder"], config['mask_prefix']) if type(None) != type(config["masks_root_folder"]) else "",
+        mask_params = "-m '%s/{sample}/' -M '%s'" % (config["masks_root_folder"], config['mask_prefix']),
         compressed = "--compressed" if config['mask_compressed'] else "",
         labeled = "--labeled" if config['mask_labeled'] else "",
         axis_fraction = config['axis_fraction'],
