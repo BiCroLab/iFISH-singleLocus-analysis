@@ -34,7 +34,7 @@ rule Automatic_3D_segmentation:
     input:
         lambda wildcards: expand("%s/%s.pdf" % (config['oof_folder'], wildcards.sample))
     output:
-        "%s/{sample}/" % config['masks_root_folder']
+        directory("%s/{sample}/" % config['masks_root_folder'])
     log:
         "%s/{sample}/snakemake.log" % config['masks_root_folder']
     params:
