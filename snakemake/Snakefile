@@ -7,32 +7,34 @@ TIFF_FINDOOF_VERSION = subprocess.check_output("tiff_findoof --version", shell =
 TIFF_AUTO3DSEG_VERSION = subprocess.check_output("tiff_auto3dseg --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 GPSEQ_FROMFISH_VERSION = subprocess.check_output("gpseq_fromfish --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 GPSEQ_FROMFISH_MERGE_VERSION = subprocess.check_output("gpseq_fromfish_merge --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+RM_DISC_CHANNELS_VERSION = subprocess.check_output("../scripts/remove_discarded_channels.py --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+
+ORF = config['output_root_folder']
 
 rule all:
     input:
-        "%s/fromfish_merged/dots.merged.tsv" % config['output_root_folder']
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
 
 rule OOF_Detection:
     version: TIFF_FINDOOF_VERSION
     input:
         lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
     output:
-        "%s/oof/{sample}.pdf" % config['output_root_folder']
+        "%s/oof/{sample}.pdf" % ORF
     params:
         imdir = "%s/{sample}" % config['deconvolved_root_folder'],
-        outdir = "%s/oof" % config['output_root_folder'],
-        output = "%s/oof/{sample}.tsv" % config['output_root_folder']
+        outdir = "%s/oof" % ORF,
+        output = "%s/oof/{sample}.tsv" % ORF
     threads: 1
     shell: """
         mkdir -p {params.outdir}
         tiff_findoof -PR {params.imdir} {params.output}
     """
 
-
 rule Automatic_3D_segmentation:
     version: TIFF_AUTO3DSEG_VERSION
     input:
-        lambda wildcards: expand("%s/oof/%s.pdf" % (config['output_root_folder'], wildcards.sample))
+        lambda wildcards: expand("%s/oof/%s.pdf" % (ORF, wildcards.sample))
     output:
         directory("%s/{sample}/" % config['masks_root_folder'])
     log:
@@ -57,13 +59,13 @@ rule Lamina_distance_calculation:
                 "%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample)
             ])
     output:
-        "%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['output_root_folder'], config['dilation'])
+        "%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (ORF, config['dilation'])
     log:
-        "%s/fromfish/{sample}/snakemake.log" % config['output_root_folder']
+        "%s/fromfish/{sample}/snakemake.log" % ORF
     params:
         dot_coords = "%s/{sample}_auto_userdots.csv" % config['auto_userdots_folder'],
         imdir = "%s/{sample}/" % (config['deconvolved_root_folder']),
-        outdir = "%s/fromfish/{sample}/" % config['output_root_folder'],
+        outdir = "%s/fromfish/{sample}/" % ORF,
         dilation = config['dilation'],
         aspect = " ".join([str(x) for x in config['aspect']]),
         distance_type = config['distance_type'],
@@ -81,23 +83,23 @@ rule Lamina_distance_calculation:
             {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}' -y &> {log}
     """
 
-rule merge:
+rule Merge:
     version: GPSEQ_FROMFISH_MERGE_VERSION
     input:
-        expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['output_root_folder'], config['dilation']), sample = config['datasets'])
+        expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (ORF, config['dilation']), sample = config['datasets'])
     output:
-        "%s/fromfish_merged/copies.merged.tsv" % config['output_root_folder'],
-        "%s/fromfish_merged/density_profile.merged.tsv" % config['output_root_folder'],
-        "%s/fromfish_merged/dots.merged.tsv" % config['output_root_folder'],
-        "%s/fromfish_merged/ncomps.merged.tsv" % config['output_root_folder'],
-        "%s/fromfish_merged/nuclei.merged.tsv" % config['output_root_folder'],
-        "%s/fromfish_merged/volume_profile.merged.tsv" % config['output_root_folder']
+        "%s/fromfish_merged/copies.merged.tsv" % ORF,
+        "%s/fromfish_merged/density_profile.merged.tsv" % ORF,
+        "%s/fromfish_merged/dots.merged.tsv" % ORF,
+        "%s/fromfish_merged/ncomps.merged.tsv" % ORF,
+        "%s/fromfish_merged/nuclei.merged.tsv" % ORF,
+        "%s/fromfish_merged/volume_profile.merged.tsv" % ORF
     log:
-        "%s/fromfish_merged/gpseq_fromfish_merge.log" % config['output_root_folder']
+        "%s/fromfish_merged/gpseq_fromfish_merge.log" % ORF
     params:
         meta = config['metadata'],
-        indir = "%s/fromfish" % config['output_root_folder'],
-        outdir = "%s/fromfish_merged" % config['output_root_folder'],
+        indir = "%s/fromfish" % ORF,
+        outdir = "%s/fromfish_merged" % ORF,
         aspect = " ".join([str(x) for x in config['aspect']]),
         sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
     threads: 100
@@ -107,3 +109,17 @@ rule merge:
             -m {params.meta} -i {params.indir} -o {params.outdir} \
             -a {params.aspect} {params.sep} &> {log}
     """
+
+rule Remove_discarded_channels:
+    version: RM_DISC_CHANNELS_VERSION
+    input:
+        "%s/fromfish_merged/dots.merged.tsv" % ORF
+    output:
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
+    log:
+        "%s/fromfish_merged/discarded_channel_removal.err.log" % ORF
+    params:
+        indir = "%s/fromfish_merged/" % ORF
+    threads: 1
+    shell:
+        "../scripts/remove_discarded_channels.py {params.indir} 2> {log}"
