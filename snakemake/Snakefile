@@ -15,8 +15,7 @@ ORF = config['output_root_folder']
 
 rule all:
     input:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.popSelected.tsv" % ORF,
-        "%s/fromfish_merged/stats/nuclei_by_dataset.merged.pdf" % ORF
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.popSelected.tsv" % ORF
 
 rule findOOF:
     version: TIFF_FINDOOF_VERSION
@@ -113,26 +112,8 @@ rule merge:
             -a {params.aspect} {params.sep} &> {log}
     """
 
-rule rmFailedChannels:
-    version: RM_FAILED_CHANNELS_VERSION
-    input:
-        "%s/fromfish_merged/dots.merged.tsv" % ORF
-    output:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
-    log:
-        "%s/fromfish_merged/log/discarded_channel_removal.log" % ORF
-    params:
-        indir = "%s/fromfish_merged" % ORF
-    threads: 1
-    shell: """
-        mkdir -p {params.indir}/log
-        ../scripts/rmFailedChannels.py {params.indir} &> {log}
-    """
-
-rule nucleiDatasetStats:
+rule nucleiDatasetStats_merged:
     version: NUCLEIDS_STATS_VERSION
-    input:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
     output:
         "%s/fromfish_merged/stats/nuclei_by_dataset.merged.pdf" % ORF
     log:
@@ -145,6 +126,23 @@ rule nucleiDatasetStats:
         ../scripts/nucleiDatasetStats.R {params.indir}/nuclei.merged.tsv \
             {params.indir}/ncomps.merged.tsv {params.indir}/stats \
             -s merged &> {log}
+    """
+
+rule rmFailedChannels:
+    version: RM_FAILED_CHANNELS_VERSION
+    input:
+        "%s/fromfish_merged/dots.merged.tsv" % ORF,
+        "%s/fromfish_merged/stats/nuclei_by_dataset.merged.pdf" % ORF # Sanity check
+    output:
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
+    log:
+        "%s/fromfish_merged/log/discarded_channel_removal.log" % ORF
+    params:
+        indir = "%s/fromfish_merged" % ORF
+    threads: 1
+    shell: """
+        mkdir -p {params.indir}/log
+        ../scripts/rmFailedChannels.py {params.indir} &> {log}
     """
 
 rule selectNucleiPop:
