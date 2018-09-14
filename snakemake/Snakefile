@@ -10,18 +10,18 @@ GPSEQ_FROMFISH_MERGE_VERSION = subprocess.check_output("gpseq_fromfish_merge --v
 
 rule all:
     input:
-        "%s/dots.merged.tsv" % config['merge_folder']
+        "%s/fromfish_merged/dots.merged.tsv" % config['output_root_folder']
 
 rule OOF_Detection:
     version: TIFF_FINDOOF_VERSION
     input:
         lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
     output:
-        "%s/{sample}.pdf" % config['oof_folder']
+        "%s/oof/{sample}.pdf" % config['output_root_folder']
     params:
         imdir = "%s/{sample}" % config['deconvolved_root_folder'],
-        outdir = config['oof_folder'],
-        output = "%s/{sample}.tsv" % config['oof_folder']
+        outdir = "%s/oof" % config['output_root_folder'],
+        output = "%s/oof/{sample}.tsv" % config['output_root_folder']
     threads: 1
     shell: """
         mkdir -p {params.outdir}
@@ -32,7 +32,7 @@ rule OOF_Detection:
 rule Automatic_3D_segmentation:
     version: TIFF_AUTO3DSEG_VERSION
     input:
-        lambda wildcards: expand("%s/%s.pdf" % (config['oof_folder'], wildcards.sample))
+        lambda wildcards: expand("%s/oof/%s.pdf" % (config['output_root_folder'], wildcards.sample))
     output:
         directory("%s/{sample}/" % config['masks_root_folder'])
     log:
@@ -57,13 +57,13 @@ rule Lamina_distance_calculation:
                 "%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample)
             ])
     output:
-        "%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation'])
+        "%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['output_root_folder'], config['dilation'])
     log:
-        "%s/{sample}/snakemake.log" % config['fromfish_folder']
+        "%s/fromfish/{sample}/snakemake.log" % config['output_root_folder']
     params:
         dot_coords = "%s/{sample}_auto_userdots.csv" % config['auto_userdots_folder'],
         imdir = "%s/{sample}/" % (config['deconvolved_root_folder']),
-        outdir = "%s/{sample}/" % config['fromfish_folder'],
+        outdir = "%s/fromfish/{sample}/" % config['output_root_folder'],
         dilation = config['dilation'],
         aspect = " ".join([str(x) for x in config['aspect']]),
         distance_type = config['distance_type'],
@@ -84,20 +84,20 @@ rule Lamina_distance_calculation:
 rule merge:
     version: GPSEQ_FROMFISH_MERGE_VERSION
     input:
-        expand("%s/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['fromfish_folder'], config['dilation']), sample = config['datasets'])
+        expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (config['output_root_folder'], config['dilation']), sample = config['datasets'])
     output:
-        "%s/copies.merged.tsv" % config['merge_folder'],
-        "%s/density_profile.merged.tsv" % config['merge_folder'],
-        "%s/dots.merged.tsv" % config['merge_folder'],
-        "%s/ncomps.merged.tsv" % config['merge_folder'],
-        "%s/nuclei.merged.tsv" % config['merge_folder'],
-        "%s/volume_profile.merged.tsv" % config['merge_folder']
+        "%s/fromfish_merged/copies.merged.tsv" % config['output_root_folder'],
+        "%s/fromfish_merged/density_profile.merged.tsv" % config['output_root_folder'],
+        "%s/fromfish_merged/dots.merged.tsv" % config['output_root_folder'],
+        "%s/fromfish_merged/ncomps.merged.tsv" % config['output_root_folder'],
+        "%s/fromfish_merged/nuclei.merged.tsv" % config['output_root_folder'],
+        "%s/fromfish_merged/volume_profile.merged.tsv" % config['output_root_folder']
     log:
-        "%s/gpseq_fromfish_merge.log" % config['merge_folder']
+        "%s/fromfish_merged/gpseq_fromfish_merge.log" % config['output_root_folder']
     params:
         meta = config['metadata'],
-        indir = config['fromfish_folder'],
-        outdir = config['merge_folder'],
+        indir = "%s/fromfish" % config['output_root_folder'],
+        outdir = "%s/fromfish_merged" % config['output_root_folder'],
         aspect = " ".join([str(x) for x in config['aspect']]),
         sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
     threads: 100
