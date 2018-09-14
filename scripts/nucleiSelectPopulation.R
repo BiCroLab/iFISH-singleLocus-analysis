@@ -40,8 +40,10 @@ parser = add_argument(parser, arg = 'outputFolder',
 	help = 'Path to output folder.')
 
 # Define elective arguments
-parser = add_argument(parser, arg = '--elective', short = '-e', type = class(0),
-	help = 'Elective argument.', default = 1, nargs = 1)
+parser = add_argument(parser, arg = '--k-sigma', short = '-k', type = class(0),
+	help = 'Sigma constant for interval definition.', default = 3, nargs = 1)
+parser = add_argument(parser, arg = '--suffix', short = '-s', type = class(""),
+	help = 'Suffix for output tables.', default = "", nargs = 1)
 
 # Version argument
 version_flag = "0.0.1"
@@ -59,6 +61,13 @@ p = parse_args(parser)
 
 # Attach argument values to variables
 attach(p['' != names(p)])
+
+if ( !dir.exists(outputFolder) )
+	stop(sprintf("output folder not found: %s", outputFolder))
+
+if ( 0 != nchar(suffix) ) {
+	if ( !grepl("^\\.", suffix) ) suffix = paste0(".", suffix)
+}
 
 # RUN ==========================================================================
 

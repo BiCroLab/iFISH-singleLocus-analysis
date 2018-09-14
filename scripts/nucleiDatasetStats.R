@@ -52,6 +52,18 @@ p = parse_args(parser)
 # Attach argument values to variables
 attach(p['' != names(p)], warn.conflicts = F)
 
+if ( !file.exists(nucleiTable) )
+	stop(sprintf("nuclei table not found: %s", nucleiTable))
+if ( !file.exists(compTable) )
+	stop(sprintf("compartment table not found: %s", compTable))
+
+if ( !dir.exists(outputFolder) )
+	stop(sprintf("output folder not found: %s", outputFolder))
+
+if ( 0 != nchar(suffix) ) {
+	if ( !grepl("^\\.", suffix) ) suffix = paste0(".", suffix)
+}
+
 # FUNCTIONS ====================================================================
 
 
@@ -72,13 +84,6 @@ plot_distribution = function(data, col, title) {
 
 tnuc = read.delim(nucleiTable, as.is = T, header = T)
 tcom = read.delim(compTable, as.is = T, header = T)
-
-if ( !dir.exists(outputFolder) )
-	stop(sprintf("output folder not found: %s", outputFolder))
-
-if ( 0 != nchar(suffix) ) {
-	if ( !grepl("^\\.", suffix) ) suffix = paste0(".", suffix)
-}
 
 pdf(sprintf("%s/nuclei_by_dataset%s.pdf", outputFolder, suffix),
 	width = 20, height = 10)
