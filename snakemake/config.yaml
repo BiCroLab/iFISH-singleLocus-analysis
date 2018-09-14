@@ -21,8 +21,9 @@ axis_fraction: 0.25
 discard_channels: ["a700", "ir800"]
 dilate_Z: True
 
-# MERGE
+# MERGE & FILTERS
 metadata_delim: "\t"
+k_sigma_population_selection: 3
 
 # SAMPLES
 datasets: [

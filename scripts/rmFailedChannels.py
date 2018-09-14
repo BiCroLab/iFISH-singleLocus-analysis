@@ -5,7 +5,6 @@
 # 
 # Author: Gabriele Girelli
 # Email: gigi.ga90@gmail.com
-# Version: 0.0.1
 # Date: 20180914
 # Project: iFISH single locus
 # Description: remove discarded channels (after merge) and produce statistics.
