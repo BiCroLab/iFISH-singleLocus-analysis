@@ -10,12 +10,13 @@ GPSEQ_FROMFISH_MERGE_VERSION = subprocess.check_output("gpseq_fromfish_merge --v
 RM_FAILED_CHANNELS_VERSION = subprocess.check_output("../scripts/rmFailedChannels.py --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 NUCLEIDS_STATS_VERSION = subprocess.check_output("../scripts/nucleiDatasetStats.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 NUCLEI_POPSEL_VERSION = subprocess.check_output("../scripts/nucleiSelectPopulation.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+DOT_SELECT_VERSION = subprocess.check_output("../scripts/dotSelect.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 ORF = config['output_root_folder']
 
 rule all:
     input:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.brightest.tsv" % ORF
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
@@ -166,4 +167,19 @@ rule Select_nuclear_G1_population:
             {params.indir}/ncomps.merged.tsv \
             {params.indir}/stats \
             -t {threads} --ksigma {params.ksigma} &> {log}
+    """
+
+rule Dot_selection:
+    version: DOT_SELECT_VERSION
+    input:
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
+    output:
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.brightest.tsv" % ORF
+    log:
+        "%s/fromfish_merged/log/dot_selection.log"
+    params:
+        indir = "%s/fromfish_merged" % ORF
+    threads: 100
+    shell: """
+        ../scripts/dotSelect.R "test" &> {log}
     """

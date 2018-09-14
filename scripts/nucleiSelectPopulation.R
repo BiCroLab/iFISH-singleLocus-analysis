@@ -4,7 +4,6 @@
 # 
 # Author: Gabriele Girelli
 # Email: gigi.ga90@gmail.com
-# Version: 0.0.1
 # Description:
 # 	- Plot distribution of intensity interal over volume and flattened area.
 # 	- Fit sum of Gaussians and select k*sigma range around the major Peak.
