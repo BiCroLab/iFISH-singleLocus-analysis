@@ -32,7 +32,7 @@ parser = add_argument(parser, arg = '--elective', short = '-e', type = class(0),
 p = parse_args(parser)
 
 # Attach argument values to variables
-attach(p['' != names(p)])
+attach(p['' != names(p)], warn.conflicts = F)
 
 # RUN ==========================================================================
 

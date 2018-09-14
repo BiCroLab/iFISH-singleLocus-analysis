@@ -15,7 +15,7 @@ ORF = config['output_root_folder']
 
 rule all:
     input:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.popSelected.tsv" % ORF
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
@@ -128,7 +128,7 @@ rule Check_nuclei:
             -s {suffix} &> {log}
     """
 
-rule Remove_failed_nuclei:
+rule Remove_failed_channels:
     version: RM_FAILED_CHANNELS_VERSION
     input:
         "%s/fromfish_merged/dots.merged.tsv" % ORF,
@@ -145,19 +145,25 @@ rule Remove_failed_nuclei:
         ../scripts/rmFailedChannels.py {params.indir} &> {log}
     """
 
-rule Select_nuclear_population:
+rule Select_nuclear_G1_population:
     version: NUCLEI_POPSEL_VERSION
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
     output:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.popSelected.tsv" % ORF,
-        "%s/fromfish_merged/nuclei.merged.popSelected.tsv" % ORF,
-        "%s/fromfish_merged/ncomps.merged.popSelected.tsv" % ORF
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
+        "%s/fromfish_merged/nuclei.merged.G1selected.tsv" % ORF,
+        "%s/fromfish_merged/ncomps.merged.G1selected.tsv" % ORF
     log:
         "%s/fromfish_merged/log/nuclei_population_selection.log" % ORF
     params:
-        indir = "%s/fromfish_merged" % ORF
-    threads: 10
+        indir = "%s/fromfish_merged" % ORF,
+        ksigma = config['k_sigma_population_selection']
+    threads: 100
     shell: """
-        ../scripts/nucleiSelectPopulation.R "test" &> {log}
+        ../scripts/nucleiSelectPopulation.R \
+            {params.indir}/dots.merged.noDiscardedChannels.tsv \
+            {params.indir}/nuclei.merged.tsv \
+            {params.indir}/ncomps.merged.tsv \
+            {params.indir}/stats \
+            -t {threads} --ksigma {params.ksigma} &> {log}
     """
