@@ -17,7 +17,7 @@ rule all:
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.popSelected.tsv" % ORF
 
-rule findOOF:
+rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
     input:
         lambda wildcards: expand("%s/%s/" % (config['deconvolved_root_folder'], wildcards.sample))
@@ -33,7 +33,7 @@ rule findOOF:
         tiff_findoof -PR {params.imdir} {params.output}
     """
 
-rule auto3Dseg:
+rule Automatic_3D_segmentation:
     version: TIFF_AUTO3DSEG_VERSION
     input:
         lambda wildcards: expand("%s/oof/%s.pdf" % (ORF, wildcards.sample))
@@ -52,7 +52,7 @@ rule auto3Dseg:
         tiff_auto3dseg -t {threads} {params.compressed} {params.labeled} {params.imdir} {params.outdir} &> {log}
     """
 
-rule calcLaminaDist:
+rule Calculate_Lamina_Distance:
     version: GPSEQ_FROMFISH_VERSION
     input:
         lambda wildcards: expand([
@@ -85,7 +85,7 @@ rule calcLaminaDist:
             {params.dilate_Z} '{params.dot_coords}' '{params.imdir}' '{params.outdir}' -y &> {log}
     """
 
-rule merge:
+rule Merge_datasets:
     version: GPSEQ_FROMFISH_MERGE_VERSION
     input:
         expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (ORF, config['dilation']), sample = config['datasets'])
@@ -112,23 +112,23 @@ rule merge:
             -a {params.aspect} {params.sep} &> {log}
     """
 
-rule nucleiDatasetStats_merged:
+rule Check_nuclei:
     version: NUCLEIDS_STATS_VERSION
     output:
-        "%s/fromfish_merged/stats/nuclei_by_dataset.merged.pdf" % ORF
+        "%s/fromfish_merged/stats/nuclei_by_dataset.{suffix}.pdf" % ORF
     log:
-        "%s/fromfish_merged/log/nuclei_dataset_stats.merged.log" % ORF
+        "%s/fromfish_merged/log/nuclei_dataset_stats.{suffix}.log" % ORF
     params:
         indir = "%s/fromfish_merged" % ORF
     threads: 1
     shell: """
         mkdir -p {params.indir}/stats
-        ../scripts/nucleiDatasetStats.R {params.indir}/nuclei.merged.tsv \
-            {params.indir}/ncomps.merged.tsv {params.indir}/stats \
-            -s merged &> {log}
+        ../scripts/nucleiDatasetStats.R {params.indir}/nuclei.{suffix}.tsv \
+            {params.indir}/ncomps.{suffix}.tsv {params.indir}/stats \
+            -s {suffix} &> {log}
     """
 
-rule rmFailedChannels:
+rule Remove_failed_nuclei:
     version: RM_FAILED_CHANNELS_VERSION
     input:
         "%s/fromfish_merged/dots.merged.tsv" % ORF,
@@ -145,7 +145,7 @@ rule rmFailedChannels:
         ../scripts/rmFailedChannels.py {params.indir} &> {log}
     """
 
-rule selectNucleiPop:
+rule Select_nuclear_population:
     version: NUCLEI_POPSEL_VERSION
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
