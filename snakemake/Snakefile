@@ -117,9 +117,11 @@ rule Remove_discarded_channels:
     output:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF
     log:
-        "%s/fromfish_merged/discarded_channel_removal.err.log" % ORF
+        "%s/fromfish_merged/log/discarded_channel_removal.err.log" % ORF
     params:
-        indir = "%s/fromfish_merged/" % ORF
+        indir = "%s/fromfish_merged" % ORF
     threads: 1
-    shell:
-        "../scripts/remove_discarded_channels.py {params.indir} 2> {log}"
+    shell: """
+        mkdir -p {params.indir}/log
+        ../scripts/remove_discarded_channels.py {params.indir} -l {params.indir}/log 2> {log}
+    """
