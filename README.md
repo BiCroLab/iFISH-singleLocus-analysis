@@ -12,9 +12,7 @@ Standard iFISH single locus data analysis pipeline controlled by snakemake, a wo
 
 ## Setup and run
 
-IMPORTANT: before running the pipeline modify the config.yaml according to your needs, or create a new one.
-
-You can run the standard workflow using: `snakemake --configfile=<your config file>`
+IMPORTANT: before running the pipeline modify the config.yaml according to your needs, or create a new one. You can run the standard workflow using: `snakemake --configfile=<your config file>`.
 
 #### Config file parameters
 
@@ -28,9 +26,7 @@ You can run the standard workflow using: `snakemake --configfile=<your config fi
 
 #### Deconvolved images, by Huygens (or similar)
 
-Create a subfolder in `input`, where you will place a folder for each dataset. The absolute path to this folder should be specified in the `config.yaml` file as `deconvolved_root_folder`
-
-The folder name <u>must</u> match the dataset name. Each dataset folder should contain the deconvolved tiff images, alongside a `<channel>_<ID>_history.txt` file containing the deconvolution log.
+Create a subfolder in `input`, where you will place a folder for each dataset. The absolute path to this folder should be specified in the `config.yaml` file as `deconvolved_root_folder`. The folder name <u>must</u> match the dataset name. Each dataset folder should contain the deconvolved tiff images, alongside a `<channel>_<ID>_history.txt` file containing the deconvolution log.
 
 #### Automatically picked userDots
 
