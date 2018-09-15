@@ -4,8 +4,8 @@
 # 
 # Author: Gabriele Girelli
 # Email: gigi.ga90@gmail.com
-# Description: plot distribution of nuclear features per reorder(dataset, date) and cell type,
-# 			   as a manual sanity check.
+# Description: plot distribution of nuclear features per reorder(dataset, date)
+# 			   and cell type, as a manual sanity check.
 # 
 # ------------------------------------------------------------------------------
 
@@ -65,7 +65,6 @@ if ( 0 != nchar(suffix) ) {
 }
 
 # FUNCTIONS ====================================================================
-
 
 plot_distribution = function(data, col, title) {
 	`+.uneval` <- function(a,b) {

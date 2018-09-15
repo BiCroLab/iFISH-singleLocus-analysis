@@ -20,7 +20,8 @@ suppressMessages(library(readr))
 
 # Create arguent parser
 scriptName = "dotSelect.R"
-parser = arg_parser('...', name = scriptName)
+parser = arg_parser('Select the top brightest dots, per cell-type.',
+	name = scriptName)
 
 # Define mandatory arguments
 parser = add_argument(parser, arg = 'dotsTable', type = class(""),
