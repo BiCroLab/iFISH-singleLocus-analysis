@@ -120,13 +120,14 @@ rule Check_nuclei:
     log:
         "%s/fromfish_merged/log/nuclei_dataset_stats.{suffix}.log" % ORF
     params:
-        indir = "%s/fromfish_merged" % ORF
+        indir = "%s/fromfish_merged" % ORF,
+        suffix = "{suffix}"
     threads: 1
     shell: """
         mkdir -p {params.indir}/stats
-        ../scripts/nucleiDatasetStats.R {params.indir}/nuclei.{suffix}.tsv \
-            {params.indir}/ncomps.{suffix}.tsv {params.indir}/stats \
-            -s {suffix} &> {log}
+        ../scripts/nucleiDatasetStats.R {params.indir}/nuclei.{params.suffix}.tsv \
+            {params.indir}/ncomps.{params.suffix}.tsv {params.indir}/stats \
+            -s {params.suffix} &> {log}
     """
 
 rule Remove_failed_channels:
@@ -173,13 +174,15 @@ rule Dot_selection:
     version: DOT_SELECT_VERSION
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
+        "%s/fromfish_merged/stats/nuclei_by_dataset.merged.G1selected.pdf" % ORF # Sanity check
     output:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.brightest.tsv" % ORF
     log:
-        "%s/fromfish_merged/log/dot_selection.log"
+        "%s/fromfish_merged/log/dot_selection.log" % ORF
     params:
-        indir = "%s/fromfish_merged" % ORF
+        dotsTable = "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
+        nDots_cellTypes = " ".join(["%d:%s" % (config['ndots'][cellType], cellType) for cellType in config['ndots']])
     threads: 100
     shell: """
-        ../scripts/dotSelect.R "test" &> {log}
+        ../scripts/dotSelect.R {params.dotsTable} -N {params.nDots_cellTypes} -t {threads} &> {log}
     """
