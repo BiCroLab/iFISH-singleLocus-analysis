@@ -16,7 +16,8 @@ ORF = config['output_root_folder']
 
 rule all:
     input:
-        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.brightest.tsv" % ORF
+        "%s/fromfish_merged/stats/dots_by_probe.merged.noDiscardedChannels.G1selected.pdf" % ORF,
+        "%s/fromfish_merged/stats/dots_by_probe.merged.noDiscardedChannels.G1selected.brightest.pdf" % ORF
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
@@ -113,8 +114,13 @@ rule Merge_datasets:
             -a {params.aspect} {params.sep} &> {log}
     """
 
-rule Check_nuclei:
+rule Check_nuclei_by_dataset:
     version: NUCLEIDS_STATS_VERSION
+    input:
+        lambda wildcards: expand([
+            "%s/fromfish_merged/nuclei.%s.tsv" % (ORF, wildcards.suffix),
+            "%s/fromfish_merged/ncomps.%s.tsv" % (ORF, wildcards.suffix)
+        ])
     output:
         "%s/fromfish_merged/stats/nuclei_by_dataset.{suffix}.pdf" % ORF
     log:
@@ -186,3 +192,15 @@ rule Dot_selection:
     shell: """
         ../scripts/dotSelect.R {params.dotsTable} -N {params.nDots_cellTypes} -t {threads} &> {log}
     """
+
+rule Check_nuclei_by_probe:
+    version: 1
+    input:
+        lambda wildcards: expand("%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix))
+    output:
+        "%s/fromfish_merged/stats/dots_by_probe.{suffix}.pdf" % ORF
+    log:
+        "%s/fromfish_merged/log/dots_probe_stats.{suffix}.log" % ORF
+    params:
+        indir = "%s/fromfish_merged" % ORF
+    shell: ""
