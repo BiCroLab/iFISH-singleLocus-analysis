@@ -11,13 +11,17 @@ RM_FAILED_CHANNELS_VERSION = subprocess.check_output("../scripts/rmFailedChannel
 NUCLEIDS_STATS_VERSION = subprocess.check_output("../scripts/nucleiDatasetStats.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 NUCLEI_POPSEL_VERSION = subprocess.check_output("../scripts/nucleiSelectPopulation.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 DOT_SELECT_VERSION = subprocess.check_output("../scripts/dotSelect.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+PROBE_STATS_VERSION = subprocess.check_output("../scripts/nucleiProbeStats.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 ORF = config['output_root_folder']
 
+final_suffix = ["merged.noDiscardedChannels.G1selected", "merged.noDiscardedChannels.G1selected.brightest"]
+
 rule all:
     input:
-        "%s/fromfish_merged/stats/nuclei_by_probe.merged.noDiscardedChannels.G1selected.pdf" % ORF,
-        "%s/fromfish_merged/stats/nuclei_by_probe.merged.noDiscardedChannels.G1selected.brightest.pdf" % ORF
+        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.pdf" % ORF,
+        expand("%s/rankings/ranks.1Mb.{suffix}.tsv" % ORF, suffix = final_suffix),
+        expand("%s/rankings/ranks.chromWide.{suffix}.tsv" % ORF, suffix = final_suffix)
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
@@ -176,7 +180,7 @@ rule Select_nuclear_G1_population:
             -t {threads} --ksigma {params.ksigma} &> {log}
     """
 
-rule Dot_selection:
+rule Brightest_dot_selection:
     version: DOT_SELECT_VERSION
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF,
@@ -194,7 +198,7 @@ rule Dot_selection:
     """
 
 rule Check_nuclei_by_probe:
-    version: 1
+    version: PROBE_STATS_VERSION
     input:
         lambda wildcards: expand("%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix))
     output:
@@ -208,4 +212,36 @@ rule Check_nuclei_by_probe:
     shell: """
         ../scripts/nucleiProbeStats.R {params.indir}/dots.{params.suffix}.tsv \
             {params.indir}/stats -s {params.suffix} &> {log}
+    """
+
+rule Plot_ideograms:
+    version: 1
+    input:
+        "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF
+    output:
+        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.pdf" % ORF
+    log:
+        "%s/ideograms/log" % ORF
+    params:
+        outdir = "%s/ideograms" % ORF
+    shell: """
+        mkdir {params.outdir}
+    """
+
+rule Rank:
+    version: 1
+    input:
+        lambda wildcards: expand([
+            "%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix),
+            "%s/fromfish_merged/stats/nuclei_by_probe.%s.pdf" % (ORF, wildcards.suffix) # sanity-check
+        ])
+    output:
+        "%s/rankings/ranks.1Mb.{suffix}.tsv" % ORF,
+        "%s/rankings/ranks.chromWide.{suffix}.tsv" % ORF
+    log:
+        "%s/rankings/{suffix}.log" % ORF
+    params:
+        outdir = "%s/rankings" % ORF
+    shell: """
+        mkdir {params.outdir}
     """

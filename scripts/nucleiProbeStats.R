@@ -103,7 +103,11 @@ nLowProbes = sum(data$nnuclei < 100)
 pdf(sprintf("%s/nuclei_by_probe%s.pdf", outputFolder, suffix),
 	width = 25, height = 10)
 
-ggplot(data, aes(x = probe, y = nnuclei, fill = reorder(chrom, chromID))
+ggplot(data, aes(
+		x = reorder(probe, chromID),
+		y = nnuclei,
+		fill = reorder(chrom, chromID)
+	)
 	) + geom_bar(stat = 'identity'
 	) + xlab("Probe label") + ylab("Number of nuclei"
 	) + geom_hline(yintercept = 100, linetype = "dashed", color = "black"
@@ -113,7 +117,11 @@ ggplot(data, aes(x = probe, y = nnuclei, fill = reorder(chrom, chromID))
 		axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5)
 	)
 
-ggplot(data, aes(x = probe, y = ndots, fill = reorder(chrom, chromID))
+ggplot(data, aes(
+		x = reorder(probe, chromID),
+		y = ndots,
+		fill = reorder(chrom, chromID)
+	)
 	) + geom_bar(stat = 'identity'
 	) + xlab("Probe label") + ylab("Number of dots"
 	) + theme_bw(
