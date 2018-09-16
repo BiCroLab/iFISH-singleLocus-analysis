@@ -12,6 +12,7 @@ NUCLEIDS_STATS_VERSION = subprocess.check_output("../scripts/nucleiDatasetStats.
 NUCLEI_POPSEL_VERSION = subprocess.check_output("../scripts/nucleiSelectPopulation.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 DOT_SELECT_VERSION = subprocess.check_output("../scripts/dotSelect.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 PROBE_STATS_VERSION = subprocess.check_output("../scripts/nucleiProbeStats.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+IDEOGRAM_PLOT_VERSION = subprocess.check_output("../scripts/plotIdeograms.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 ORF = config['output_root_folder']
 
@@ -215,7 +216,7 @@ rule Check_nuclei_by_probe:
     """
 
 rule Plot_ideograms:
-    version: 1
+    version: IDEOGRAM_PLOT_VERSION
     input:
         "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF
     output:
@@ -223,9 +224,16 @@ rule Plot_ideograms:
     log:
         "%s/ideograms/log" % ORF
     params:
-        outdir = "%s/ideograms" % ORF
+        indir = "%s/fromfish_merged" % ORF,
+        outdir = "%s/ideograms" % ORF,
+        giemsa_path = config['giemsa_path'],
+        probe_path = config['probe_path']
     shell: """
-        mkdir {params.outdir}
+        mkdir -p '{params.outdir}'
+        ../scripts/plotIdeograms.R \
+            '{params.indir}/dots.merged.noDiscardedChannels.G1selected.tsv' \
+            '{params.probe_path}' '{params.giemsa_path}' '{params.outdir}' \
+            &> {log}
     """
 
 rule Rank:

@@ -29,6 +29,10 @@ ndots:
   IMR90: 2
   HeLa: 4
 
+# PLOTS
+giemsa_path: "/media/MiSo/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
+probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
+
 # SAMPLES
 datasets: [
   "iAM102_20180607_001",
