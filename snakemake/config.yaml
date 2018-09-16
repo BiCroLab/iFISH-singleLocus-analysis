@@ -31,7 +31,7 @@ ndots:
 
 # PLOTS
 giemsa_path: "/media/MiSo/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
-probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
+probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.transCorrected.HAP1.Philadelphia.bed"
 
 # RANKS
 rank_bin_sizes: [
