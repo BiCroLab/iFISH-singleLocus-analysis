@@ -194,8 +194,8 @@ write.table(trank_probes, file.path(outputFolder,
 l = lapply(binSize, FUN = function(size) {
 	hsize = ceiling(size/2)
 	mids = ceiling((trank_probes$end-trank_probes$start)+trank_probes$start)
-	trank_probes$start = trank_probes$start-hsize
-	trank_probes$end = trank_probes$end+hsize
+	trank_probes$start = mids-hsize
+	trank_probes$end = mids+hsize
 	write.table(trank_probes, file.path(outputFolder,
 		sprintf("ranks.%dprobe%s.tsv", size, suffix)),
 		quote = F, sep = "\t", row.names = F)
