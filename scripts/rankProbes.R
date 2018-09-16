@@ -77,88 +77,6 @@ script.basename <- dirname(script.name)
 
 source(file.path(script.basename, "common.functions.R"))
 
-mk_rankings = function(path, suffix) {
-	mt = read.delim(meta_path, as.is = T, header = F)
-	colnames(mt) = c("chrom", "start", "end", "probe_label")
-
-	cst = read.delim(csize_path, as.is = T, header = F)
-	colnames(cst) = c("chr", "end")
-
-	t = as.data.frame(read_delim(path, "\t"), stringsAsFactors = F)
-	t$chr = unlist(lapply(t$probe_label, FUN = function(x) {
-		unlist(strsplit(x, ".", fixed = T))[1]
-	}))
-
-	chr_table = do.call(rbind, by(t, t$chr, FUN = function(subt) {
-		data.frame(
-			chrom = subt$chr[1],
-			start = 0,
-			end = cst$end[cst$chr == subt$chr[1]],
-			dln_min = min(subt$lamin_dist_norm),
-			dln_median = median(subt$lamin_dist_norm),
-			dln_mean = mean(subt$lamin_dist_norm),
-			#dln_max = max(subt$lamin_dist_norm),
-			dln_std = sd(subt$lamin_dist_norm),
-			stringsAsFactors=F
-		)
-	}))
-
-	probe_table = do.call(rbind, by(t, t$probe_label, FUN = function(subt) {
-		data.frame(
-			chrom = subt$chr[1],
-			start = mt$start[mt$probe_label == subt$probe_label[1]],
-			end = mt$end[mt$probe_label == subt$probe_label[1]],
-			dln_min = min(subt$lamin_dist_norm),
-			dln_median = median(subt$lamin_dist_norm),
-			dln_mean = mean(subt$lamin_dist_norm),
-			#dln_max = max(subt$lamin_dist_norm),
-			dln_std = sd(subt$lamin_dist_norm),
-			probe_label = subt$probe_label[1],
-			stringsAsFactors=F
-		)
-	}))
-
-	write.table(chr_table, paste0(dataset_date, ".chrWide.stats.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-	write.table(probe_table, paste0(dataset_date, ".probeWise.stats.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-	write.table(chr_table, paste0(dataset_date, ".chrWide.ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-	write.table(probe_table[, -ncol(probe_table)],
-		paste0(dataset_date, ".probeWise.ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-
-	mid = ceiling(probe_table$start + (probe_table$end - probe_table$start) / 2)
-
-	size = 100e3
-	probe_table$start = ceiling(mid - size/2)
-	probe_table$end = ceiling(mid + size/2)
-	write.table(probe_table[, -ncol(probe_table)],
-		paste0(dataset_date, ".probeWise.size", size, ".ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-
-	size = 500e3
-	probe_table$start = ceiling(mid - size/2)
-	probe_table$end = ceiling(mid + size/2)
-	write.table(probe_table[, -ncol(probe_table)],
-		paste0(dataset_date, ".probeWise.size", size, ".ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-
-	size = 1e6
-	probe_table$start = ceiling(mid - size/2)
-	probe_table$end = ceiling(mid + size/2)
-	write.table(probe_table[, -ncol(probe_table)],
-		paste0(dataset_date, ".probeWise.size", size, ".ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-
-	size = 10e6
-	probe_table$start = ceiling(mid - size/2)
-	probe_table$end = ceiling(mid + size/2)
-	write.table(probe_table[, -ncol(probe_table)],
-		paste0(dataset_date, ".probeWise.size", size, ".ranks.", suffix, ".tsv"),
-		quote = F, col.names = T, row.names = F, sep = "\t")
-}
-
 # RUN ==========================================================================
 
 bpro = read_probe_bed(probesBed)
@@ -193,10 +111,11 @@ write.table(trank_probes, file.path(outputFolder,
 
 l = lapply(binSize, FUN = function(size) {
 	hsize = ceiling(size/2)
-	mids = ceiling((trank_probes$end-trank_probes$start)+trank_probes$start)
-	trank_probes$start = mids-hsize
-	trank_probes$end = mids+hsize
-	write.table(trank_probes, file.path(outputFolder,
+	out = trank_probes
+	mids = ceiling((trank_probes$end-trank_probes$start)/2+trank_probes$start)
+	out$start = mids-hsize
+	out$end = mids+hsize
+	write.table(out, file.path(outputFolder,
 		sprintf("ranks.%dprobe%s.tsv", size, suffix)),
 		quote = F, sep = "\t", row.names = F)
 })
