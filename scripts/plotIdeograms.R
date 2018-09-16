@@ -64,25 +64,15 @@ if ( !file.exists(outputFolder) )
 	cat(sprintf("Output folder not found, created: %s\n", outputFolder))
 	dir.create(outputFolder, showWarnings = F)
 
+initial.options <- commandArgs(trailingOnly = FALSE)
+file.arg.name <- "--file="
+script.name <- sub(file.arg.name, "",
+    initial.options[grep(file.arg.name, initial.options)])
+script.basename <- dirname(script.name)
+
 # FUNCTIONS ====================================================================
 
-chrom2chromID = function(chrom) {
-	if ( grepl(":", chrom) ) {
-		return(floor(as.numeric(gsub(":", ".", substr(chrom, 4, nchar(chrom))))))
-	} else {
-		chromID = substr(chrom, 4, nchar(chrom))
-		if ( "X" == chromID ) chromID = 23
-		if ( "Y" == chromID ) chromID = 24
-		return(as.numeric(chromID))
-	}
-}
-
-add_chrom_ID = function(data) {
-	cid_table = data.frame(chrom = unique(data$chrom), stringsAsFactors = F)
-	cid_table$chromID = unlist(lapply(cid_table$chrom, FUN = chrom2chromID))
-	data$chromID = cid_table$chromID[match(data$chrom, cid_table$chrom)]
-	return(data)
-}
+source(file.path(cript.basename, "common.functions.R"))
 
 read_giemsa_for_ideogram = function(path, space_between_chrom = 5) {
     giemsa = read.delim(path, as.is = T, header = F, skip = 1)
@@ -238,22 +228,8 @@ plot_ideogram_probes = function(probesBed, dotsTable,
 
 # RUN ==========================================================================
 
-bpro = read.delim(probesBed, as.is = T, header = F, skip = 1)
-colnames(bpro) = c("chrom", "start", "end", "name")
-bpro = add_chrom_ID(bpro)
-
-tdot = read.delim(dotsTable, as.is = T, header = T)
-probe2chrom = do.call(rbind, lapply(unique(tdot$probe_label),
-	FUN = function(label) {
-		data.frame(
-			label = label,
-			chrom = unlist(strsplit(label, '.', fixed = T))[1],
-			stringsAsFactors = F
-		)
-	})
-)
-tdot$chrom = probe2chrom$chrom[match(tdot$probe_label, probe2chrom$label)]
-tdot = add_chrom_ID(tdot)
+bpro = read_probe_bed(probesBed)
+tdot = read_dot_table(dotsTable)
 
 p = plot_ideogram_probes(bpro, tdot, "test", giemsaBed)
 

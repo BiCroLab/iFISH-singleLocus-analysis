@@ -59,25 +59,15 @@ if ( 0 != nchar(suffix) ) {
 	if ( !grepl("^\\.", suffix) ) suffix = paste0(".", suffix)
 }
 
+initial.options <- commandArgs(trailingOnly = FALSE)
+file.arg.name <- "--file="
+script.name <- sub(file.arg.name, "",
+	initial.options[grep(file.arg.name, initial.options)])
+script.basename <- dirname(script.name)
+
 # FUNCTIONS ====================================================================
 
-chrom2chromID = function(chrom) {
-	if ( grepl(":", chrom) ) {
-		return(floor(as.numeric(gsub(":", ".", substr(chrom, 4, nchar(chrom))))))
-	} else {
-		chromID = substr(chrom, 4, nchar(chrom))
-		if ( "X" == chromID ) chromID = 23
-		if ( "Y" == chromID ) chromID = 24
-		return(as.numeric(chromID))
-	}
-}
-
-add_chrom_ID = function(data) {
-	cid_table = data.frame(chrom = unique(data$chrom), stringsAsFactors = F)
-	cid_table$chromID = unlist(lapply(cid_table$chrom, FUN = chrom2chromID))
-	data$chromID = cid_table$chromID[match(data$chrom, cid_table$chrom)]
-	return(data)
-}
+source(file.path(script.basename, "common.functions.R"))
 
 # RUN ==========================================================================
 

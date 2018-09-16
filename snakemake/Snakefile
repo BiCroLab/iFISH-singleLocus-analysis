@@ -13,6 +13,7 @@ NUCLEI_POPSEL_VERSION = subprocess.check_output("../scripts/nucleiSelectPopulati
 DOT_SELECT_VERSION = subprocess.check_output("../scripts/dotSelect.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 PROBE_STATS_VERSION = subprocess.check_output("../scripts/nucleiProbeStats.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 IDEOGRAM_PLOT_VERSION = subprocess.check_output("../scripts/plotIdeograms.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
+RANK_PROBES_VERSION = subprocess.check_output("../scripts/rankProbes.R --version", shell = True).decode("utf-8").strip().split(" ")[1].strip("v")
 
 ORF = config['output_root_folder']
 
@@ -21,8 +22,9 @@ final_suffix = ["merged.noDiscardedChannels.G1selected", "merged.noDiscardedChan
 rule all:
     input:
         "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.pdf" % ORF,
-        expand("%s/rankings/ranks.1Mb.{suffix}.tsv" % ORF, suffix = final_suffix),
-        expand("%s/rankings/ranks.chromWide.{suffix}.tsv" % ORF, suffix = final_suffix)
+        expand(("%s/rankings/ranks.%dprobe.{suffix}.tsv" % (ORF, size)
+            for size in config['rank_bin_sizes']), suffix = final_suffix),
+        expand("%s/rankings/ranks.chrom.{suffix}.tsv" % ORF, suffix = final_suffix)
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
@@ -237,19 +239,30 @@ rule Plot_ideograms:
     """
 
 rule Rank:
-    version: 1
+    version: RANK_PROBES_VERSION
     input:
         lambda wildcards: expand([
             "%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix),
             "%s/fromfish_merged/stats/nuclei_by_probe.%s.pdf" % (ORF, wildcards.suffix) # sanity-check
         ])
     output:
-        "%s/rankings/ranks.1Mb.{suffix}.tsv" % ORF,
-        "%s/rankings/ranks.chromWide.{suffix}.tsv" % ORF
+        ("%s/rankings/ranks.%sprobe.{suffix}.tsv" % (ORF, bin_size)
+            for bin_size in config['rank_bin_sizes']),
+        "%s/rankings/ranks.probe.{suffix}.tsv" % ORF,
+        "%s/rankings/ranks.chrom.{suffix}.tsv" % ORF
     log:
         "%s/rankings/{suffix}.log" % ORF
     params:
-        outdir = "%s/rankings" % ORF
+        indir = "%s/fromfish_merged" % ORF,
+        outdir = "%s/rankings" % ORF,
+        suffix = "{suffix}",
+        sizes = " ".join([str(x) for x in config['rank_bin_sizes']]),
+        probe_path = config['probe_path']
     shell: """
-        mkdir {params.outdir}
+        mkdir -p {params.outdir}
+        ../scripts/rankProbes.R \
+            {params.indir}/dots.{params.suffix}.tsv \
+            {params.probe_path} {params.outdir} \
+            -s {params.suffix} -b {params.sizes} \
+            &> {log}
     """
