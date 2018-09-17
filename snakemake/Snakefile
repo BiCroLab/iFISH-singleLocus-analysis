@@ -231,10 +231,8 @@ rule Plot_ideograms:
         outdir = "%s/ideograms" % ORF
     shell: """
         mkdir -p '{params.outdir}'
-        ../scripts/plotIdeograms.R \
-            '{input.indir}/dots.merged.noDiscardedChannels.G1selected.tsv' \
-            '{input.probe_path}' '{input.giemsa_path}' '{params.outdir}' \
-            &> {log}
+        ../scripts/plotIdeograms.R '{input.requirement}'  '{input.probe_path}' \
+            '{input.giemsa_path}' '{params.outdir}' &> {log}
     """
 
 rule Rank:

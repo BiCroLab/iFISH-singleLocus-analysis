@@ -72,7 +72,7 @@ script.basename <- dirname(script.name)
 
 # FUNCTIONS ====================================================================
 
-source(file.path(cript.basename, "common.functions.R"))
+source(file.path(script.basename, "common.functions.R"))
 
 read_giemsa_for_ideogram = function(path, space_between_chrom = 5) {
     giemsa = read.delim(path, as.is = T, header = F, skip = 1)
