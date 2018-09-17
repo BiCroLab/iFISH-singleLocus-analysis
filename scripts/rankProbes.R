@@ -110,16 +110,21 @@ trank_probes = do.call(rbind, by(tdot, tdot$cell_type, FUN = function(ct) {
 	return(ctProbes)
 }))
 
+trank_probes = trank_probes[order(trank_probes$start),]
+trank_probes = trank_probes[order(trank_probes$chrom),]
+
 write.table(trank_probes, file.path(outputFolder,
 	sprintf("ranks.%sprobe%s.tsv", prefix, suffix)),
 	quote = F, sep = "\t", row.names = F)
 
 l = lapply(binSize, FUN = function(size) {
 	hsize = ceiling(size/2)
+
 	out = trank_probes
 	mids = ceiling((trank_probes$end-trank_probes$start)/2+trank_probes$start)
 	out$start = mids-hsize
 	out$end = mids+hsize
+
 	write.table(out, file.path(outputFolder,
 		sprintf("ranks.%s%dprobe%s.tsv", prefix, size, suffix)),
 		quote = F, sep = "\t", row.names = F)

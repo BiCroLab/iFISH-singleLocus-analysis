@@ -83,7 +83,7 @@ rule Calculate_Lamina_Distance:
         dilation = config['dilation'],
         aspect = " ".join([str(x) for x in config['aspect']]),
         distance_type = config['distance_type'],
-        mask_params = "-m '%s' -M '%s'" % ("{input.maskdir}", config['mask_prefix']),
+        mask_params = "-m '%s/{sample}/' -M '%s'" % (config["masks_root_folder"], config['mask_prefix']),
         compressed = "--compressed" if config['mask_compressed'] else "",
         labeled = "--labeled" if config['mask_labeled'] else "",
         axis_fraction = config['axis_fraction'],
@@ -101,7 +101,8 @@ rule Merge_datasets:
     version: GPSEQ_FROMFISH_MERGE_VERSION
     input:
         meta = config['metadata'],
-        dotsTable = expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (
+        indir = directory("%s/fromfish/" % ORF),
+        dotsTables = expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (
             ORF, config['dilation']), sample = config['datasets'])
     output:
         "%s/fromfish_merged/copies.merged.tsv" % ORF,
@@ -113,7 +114,6 @@ rule Merge_datasets:
     log:
         "%s/fromfish_merged/gpseq_fromfish_merge.log" % ORF
     params:
-        indir = os.path.dirname("{input.dotsTable}"),
         outdir = "%s/fromfish_merged" % ORF,
         aspect = " ".join([str(x) for x in config['aspect']]),
         sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
@@ -121,7 +121,7 @@ rule Merge_datasets:
     shell: """
         mkdir -p {params.outdir}
         gpseq_fromfish_merge --no-date -t {threads} \
-            -m {input.meta} -i {params.indir} -o {params.outdir} \
+            -m {input.meta} -i {input.indir} -o {params.outdir} \
             -a {params.aspect} {params.sep} &> {log}
     """
 
@@ -154,17 +154,18 @@ rule Remove_failed_channels:
     log:
         "%s/fromfish_merged/log/discarded_channel_removal.log" % ORF
     params:
-        indir = os.path.dirname("{input.dotsTable}")
+        indir = "%s/fromfish_merged/" % ORF,
     threads: 1
     shell: """
-        mkdir -p {params.indir}/log
-        ../scripts/rmFailedChannels.py {params.indir} &> {log}
+        mkdir -p {input.indir}/log
+        ../scripts/rmFailedChannels.py {input.indir} &> {log}
     """
 
 rule Select_nuclear_G1_population:
     version: NUCLEI_POPSEL_VERSION
     input:
         dotsTable = "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF,
+        indir = directory("%s/fromfish_merged/" % ORF),
         mergedNuclei = "%s/fromfish_merged/nuclei.merged.tsv" % ORF,
         mergedNComps = "%s/fromfish_merged/ncomps.merged.tsv" % ORF
     output:
@@ -174,13 +175,12 @@ rule Select_nuclear_G1_population:
     log:
         "%s/fromfish_merged/log/nuclei_population_selection.log" % ORF
     params:
-        indir = os.path.dirname("{input.dotsTable}"),
         ksigma = config['k_sigma_population_selection']
     threads: 100
     shell: """
         ../scripts/nucleiSelectPopulation.R \
             {input.dotsTable} {input.mergedNuclei} {input.mergedNComps} \
-            {params.indir}/stats -t {threads} --ksigma {params.ksigma} &> {log}
+            {input.indir}/stats -t {threads} --ksigma {params.ksigma} &> {log}
     """
 
 rule Brightest_dot_selection:
@@ -202,18 +202,18 @@ rule Brightest_dot_selection:
 rule Check_nuclei_by_probe:
     version: PROBE_STATS_VERSION
     input:
-        lambda wildcards: expand("%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix))
+        indir = directory("%s/fromfish_merged/" % ORF),
+        dotsTable = lambda wildcards: expand("%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix))
     output:
         "%s/fromfish_merged/stats/nuclei_by_probe.{suffix}.pdf" % ORF,
         "%s/fromfish_merged/stats/nuclei_by_probe.{suffix}.tsv" % ORF
     log:
         "%s/fromfish_merged/log/dots_probe_stats.{suffix}.log" % ORF
     params:
-        indir = os.path.dirname("{input}"),
         suffix = "{suffix}"
     shell: """
-        ../scripts/nucleiProbeStats.R {input} \
-            {params.indir}/stats -s {params.suffix} &> {log}
+        ../scripts/nucleiProbeStats.R {input.dotsTable} \
+            {input.indir}/stats -s {params.suffix} &> {log}
     """
 
 rule Plot_ideograms:
