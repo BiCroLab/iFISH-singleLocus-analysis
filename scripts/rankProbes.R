@@ -35,6 +35,8 @@ parser = add_argument(parser, arg = '--binSize', short = '-b', type = class(0),
 	nargs = Inf)
 
 # Define elective arguments
+parser = add_argument(parser, arg = '--prefix', short = '-p',
+	help = 'Prefix for output pdf.', default = "")
 parser = add_argument(parser, arg = '--suffix', short = '-s',
 	help = 'Suffix for output pdf.', default = "")
 
@@ -65,6 +67,9 @@ if ( !file.exists(outputFolder) )
 
 if ( 0 != nchar(suffix) ) {
 	if ( !grepl("^\\.", suffix) ) suffix = paste0(".", suffix)
+}
+if ( 0 != nchar(prefix) ) {
+	if ( !grepl("\\.$", prefix) ) prefix = paste0(prefix, ".")
 }
 
 initial.options <- commandArgs(trailingOnly = FALSE)
@@ -106,7 +111,7 @@ trank_probes = do.call(rbind, by(tdot, tdot$cell_type, FUN = function(ct) {
 }))
 
 write.table(trank_probes, file.path(outputFolder,
-	sprintf("ranks.probe%s.tsv", suffix)),
+	sprintf("ranks.%sprobe%s.tsv", prefix, suffix)),
 	quote = F, sep = "\t", row.names = F)
 
 l = lapply(binSize, FUN = function(size) {
@@ -116,7 +121,7 @@ l = lapply(binSize, FUN = function(size) {
 	out$start = mids-hsize
 	out$end = mids+hsize
 	write.table(out, file.path(outputFolder,
-		sprintf("ranks.%dprobe%s.tsv", size, suffix)),
+		sprintf("ranks.%s%dprobe%s.tsv", prefix, size, suffix)),
 		quote = F, sep = "\t", row.names = F)
 })
 
@@ -145,12 +150,12 @@ trank_chrom = do.call(rbind, by(tdot, tdot$cell_type, FUN = function(ct) {
 }))
 
 write.table(trank_chrom, file.path(outputFolder,
-	sprintf("ranks.chrom%s.tsv", suffix)),
+	sprintf("ranks.%schrom%s.tsv", prefix, suffix)),
 	quote = F, sep = "\t", row.names = F)
 
 # Plot distribution ------------------------------------------------------------
 
-pdf(file.path(outputFolder, sprintf("probes.violin%s.pdf", suffix)),
+pdf(file.path(outputFolder, sprintf("probes.%sviolin%s.pdf", prefix, suffix)),
 	width = 30, height = 15)
 l = by(tdot, tdot$cell_type, FUN = function(ct) {
 	p = ggplot(tdot, aes(

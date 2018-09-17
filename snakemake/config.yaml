@@ -31,17 +31,18 @@ ndots:
 
 # PLOTS
 giemsa_path: "/media/MiSo/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
-probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.transCorrected.HAP1.Philadelphia.bed"
+probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
 
 # RANKS
-rank_bin_sizes: [
-  100000, 1000000, 10000000
-]
+rank_bin_sizes: [ 100000, 1000000, 10000000 ]
+probe_bed:
+  1Mbprobe: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.bed"
+  1Mbprobe.transCorrected.HAP1.Philadelphia: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.transCorrected.HAP1.Philadelphia.bed"
 
 # SAMPLES
 datasets: [
   "iAM102_20180607_001",
-  "iAM105_20180607_001",
+  "iAM105_20180615_001",
   "iAM114_20180628_001",
   "iAM118_20180704_001",
   "iAM120_20180706_001",
