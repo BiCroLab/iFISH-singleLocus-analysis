@@ -157,8 +157,8 @@ rule Remove_failed_channels:
         indir = "%s/fromfish_merged/" % ORF,
     threads: 1
     shell: """
-        mkdir -p {input.indir}/log
-        ../scripts/rmFailedChannels.py {input.indir} &> {log}
+        mkdir -p {params.indir}/log
+        ../scripts/rmFailedChannels.py {params.indir} &> {log}
     """
 
 rule Select_nuclear_G1_population:
