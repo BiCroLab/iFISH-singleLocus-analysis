@@ -101,7 +101,6 @@ rule Merge_datasets:
     version: GPSEQ_FROMFISH_MERGE_VERSION
     input:
         meta = config['metadata'],
-        indir = directory("%s/fromfish/" % ORF),
         dotsTables = expand("%s/fromfish/{sample}/wCentr.out.dilate%d.{sample}_auto_userdots.tsv" % (
             ORF, config['dilation']), sample = config['datasets'])
     output:
@@ -114,6 +113,7 @@ rule Merge_datasets:
     log:
         "%s/fromfish_merged/gpseq_fromfish_merge.log" % ORF
     params:
+        indir = "%s/fromfish/" % ORF,
         outdir = "%s/fromfish_merged" % ORF,
         aspect = " ".join([str(x) for x in config['aspect']]),
         sep = "-d %s" % config['metadata_delim'] if "\t" != config['metadata_delim'] else ""
@@ -121,14 +121,13 @@ rule Merge_datasets:
     shell: """
         mkdir -p {params.outdir}
         gpseq_fromfish_merge --no-date -t {threads} \
-            -m {input.meta} -i {input.indir} -o {params.outdir} \
+            -m {input.meta} -i {params.indir} -o {params.outdir} \
             -a {params.aspect} {params.sep} &> {log}
     """
 
 rule Check_nuclei_by_dataset:
     version: NUCLEIDS_STATS_VERSION
     input:
-        indir = directory("%s/fromfish_merged" % ORF),
         nucleiTable = lambda wildcards: "%s/fromfish_merged/nuclei.%s.tsv" % (ORF, wildcards.suffix),
         nucompTable = lambda wildcards: "%s/fromfish_merged/ncomps.%s.tsv" % (ORF, wildcards.suffix)
     output:
@@ -136,12 +135,13 @@ rule Check_nuclei_by_dataset:
     log:
         "%s/fromfish_merged/log/nuclei_dataset_stats.{suffix}.log" % ORF
     params:
+        indir = "%s/fromfish_merged" % ORF,
         suffix = "{suffix}"
     threads: 1
     shell: """
-        mkdir -p {input.indir}/stats
+        mkdir -p {params.indir}/stats
         ../scripts/nucleiDatasetStats.R {input.nucleiTable} {input.nucompTable} \
-            {input.indir}/stats -s {params.suffix} &> {log}
+            {params.indir}/stats -s {params.suffix} &> {log}
     """
 
 rule Remove_failed_channels:
@@ -165,7 +165,6 @@ rule Select_nuclear_G1_population:
     version: NUCLEI_POPSEL_VERSION
     input:
         dotsTable = "%s/fromfish_merged/dots.merged.noDiscardedChannels.tsv" % ORF,
-        indir = directory("%s/fromfish_merged/" % ORF),
         mergedNuclei = "%s/fromfish_merged/nuclei.merged.tsv" % ORF,
         mergedNComps = "%s/fromfish_merged/ncomps.merged.tsv" % ORF
     output:
@@ -175,12 +174,13 @@ rule Select_nuclear_G1_population:
     log:
         "%s/fromfish_merged/log/nuclei_population_selection.log" % ORF
     params:
+        indir = "%s/fromfish_merged" % ORF,
         ksigma = config['k_sigma_population_selection']
     threads: 100
     shell: """
         ../scripts/nucleiSelectPopulation.R \
             {input.dotsTable} {input.mergedNuclei} {input.mergedNComps} \
-            {input.indir}/stats -t {threads} --ksigma {params.ksigma} &> {log}
+            {params.indir}/stats -t {threads} --ksigma {params.ksigma} &> {log}
     """
 
 rule Brightest_dot_selection:
@@ -202,7 +202,6 @@ rule Brightest_dot_selection:
 rule Check_nuclei_by_probe:
     version: PROBE_STATS_VERSION
     input:
-        indir = directory("%s/fromfish_merged/" % ORF),
         dotsTable = lambda wildcards: expand("%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix))
     output:
         "%s/fromfish_merged/stats/nuclei_by_probe.{suffix}.pdf" % ORF,
@@ -210,16 +209,16 @@ rule Check_nuclei_by_probe:
     log:
         "%s/fromfish_merged/log/dots_probe_stats.{suffix}.log" % ORF
     params:
+        indir = "%s/fromfish_merged" % ORF,
         suffix = "{suffix}"
     shell: """
         ../scripts/nucleiProbeStats.R {input.dotsTable} \
-            {input.indir}/stats -s {params.suffix} &> {log}
+            {params.indir}/stats -s {params.suffix} &> {log}
     """
 
 rule Plot_ideograms:
     version: IDEOGRAM_PLOT_VERSION
     input:
-        indir = directory("%s/fromfish_merged" % ORF),
         giemsa_path = config['giemsa_path'],
         probe_path = config['probe_path'],
         requirement = "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF
@@ -238,7 +237,6 @@ rule Plot_ideograms:
 rule Rank:
     version: RANK_PROBES_VERSION
     input:
-        indir = directory("%s/fromfish_merged" % ORF),
         probe_path = lambda wildcards: config['probe_bed'][wildcards.flag],
         requirements = lambda wildcards: expand([
             "%s/fromfish_merged/dots.%s.tsv" % (ORF, wildcards.suffix),
@@ -252,6 +250,7 @@ rule Rank:
     log:
         "%s/rankings/{flag}.{suffix}.log" % ORF
     params:
+        indir = "%s/fromfish_merged" % ORF,
         outdir = "%s/rankings" % ORF,
         prefix = "{flag}",
         suffix = "{suffix}",
@@ -259,7 +258,7 @@ rule Rank:
     shell: """
         mkdir -p {params.outdir}
         ../scripts/rankProbes.R \
-            {input.indir}/dots.{params.suffix}.tsv \
+            {params.indir}/dots.{params.suffix}.tsv \
             {input.probe_path} {params.outdir} \
             -p {params.prefix} -s {params.suffix} -b {params.sizes} \
             &> {log}
