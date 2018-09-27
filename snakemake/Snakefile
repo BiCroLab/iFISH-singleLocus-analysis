@@ -193,10 +193,12 @@ rule Brightest_dot_selection:
     log:
         "%s/fromfish_merged/log/dot_selection.log" % ORF
     params:
-        nDots_cellTypes = " ".join(["%d:%s" % (config['ndots'][cellType], cellType) for cellType in config['ndots']])
+        nDots_cellTypes = " ".join(["%d:%s" % (config['ndots'][cellType], cellType) for cellType in config['ndots']]),
+        iLabel = config['dot_value_column_label']
     threads: 100
     shell: """
-        ../scripts/dotSelect.R {input.dotsTable} -N {params.nDots_cellTypes} -t {threads} &> {log}
+        ../scripts/dotSelect.R {input.dotsTable}  -l {params.iLabel} \
+            -N {params.nDots_cellTypes} -t {threads} &> {log}
     """
 
 rule Check_nuclei_by_probe:

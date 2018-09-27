@@ -30,6 +30,9 @@ parser = add_argument(parser, arg = '--ndots', short = '-N', type = class(""),
 	help = 'Space-separated expected_Ndots:cell_type couples.', nargs = Inf)
 
 # Define elective arguments
+parser = add_argument(parser, arg = '--value-label', short = '-l',
+	help = 'Dot intensity column label. Default: "Value"', default = "Value",
+	nargs = 1, type = class(""),)
 parser = add_argument(parser, arg = '--threads', short = '-t', type = class(0),
 	help = 'Number of threads for parallelization.', default = 1, nargs = 1)
 
@@ -80,14 +83,18 @@ selectBrightestDots = function(ct, expected_ndots) {
 	dots_count = table(ct$ncuID)
 	good_sets = names(dots_count)[dots_count <= expN]
 	bad_sets = ncuID[!ncuID %in% good_sets]
-
+	print(bad_sets)
+	
 	# Select dots in bad sets
 	ct2 = do.call(rbind, mclapply(bad_sets, FUN = function(i) {
 		st = ct[ct$ncuID == i,]
-
+		print(st)
+		stop()
+		
 		if ( expN >= nrow(st) ) stop("unexpected number of dots found.")
-
-		st = st[order(st$Value, decreasing = T),]
+		
+		st = st[order(st[, value_label], decreasing = T),]
+		
 		return(st[1:expN,])
 	}, mc.cores = threads))
 

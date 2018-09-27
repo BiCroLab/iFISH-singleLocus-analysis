@@ -28,6 +28,7 @@ ndots:
   HAP1: 1
   IMR90: 2
   HeLa: 4
+dot_value_column_label: "Value"
 
 # PLOTS
 giemsa_path: "/media/MiSo/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
