@@ -83,13 +83,10 @@ selectBrightestDots = function(ct, expected_ndots) {
 	dots_count = table(ct$ncuID)
 	good_sets = names(dots_count)[dots_count <= expN]
 	bad_sets = ncuID[!ncuID %in% good_sets]
-	print(bad_sets)
 	
 	# Select dots in bad sets
 	ct2 = do.call(rbind, mclapply(bad_sets, FUN = function(i) {
 		st = ct[ct$ncuID == i,]
-		print(st)
-		stop()
 		
 		if ( expN >= nrow(st) ) stop("unexpected number of dots found.")
 		
