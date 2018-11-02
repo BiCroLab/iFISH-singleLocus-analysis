@@ -23,7 +23,7 @@ final_suffix = ["merged.noDiscardedChannels.G1selected", "merged.noDiscardedChan
 rule all:
     input:
         "%s/fromfish_merged/dots.merged.tsv" % ORF,
-        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.pdf" % ORF,
+        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.png" % ORF,
         expand(("%s/rankings/ranks.{flag}.%dprobe.{suffix}.tsv" % (ORF, size)
             for size in config['rank_bin_sizes']), suffix = final_suffix, flag = config['probe_bed']),
         expand("%s/rankings/ranks.{flag}.chrom.{suffix}.tsv" % ORF,
@@ -225,7 +225,7 @@ rule Plot_ideograms:
         probe_path = config['probe_path'],
         requirement = "%s/fromfish_merged/dots.merged.noDiscardedChannels.G1selected.tsv" % ORF
     output:
-        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.pdf" % ORF
+        "%s/ideograms/probes.merged.noDiscardedChannels.G1selected.png" % ORF
     log:
         "%s/ideograms/log" % ORF
     params:
