@@ -1,4 +1,6 @@
 import os
+import matplotlib as mpl
+mpl.use('Agg')
 try:
     import pygpseq
 except ImportError as e:
