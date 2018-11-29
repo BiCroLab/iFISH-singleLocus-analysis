@@ -1,10 +1,10 @@
 # INPUT
 auto_userdots_folder: "/media/Morpheus/userdots_fromNov2018"
-deconvolved_root_folder: "/media/Morpheus/HeLa_decon"
+deconvolved_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/input/HeLa_decon"
 metadata: "/media/Morpheus/2018-11-27-iFISH_singleLocus_metadata.tsv"
 
 # OUTPUT
-masks_root_folder: "/media/Morpheus/HeLa_3dseg" # set to None to avoid storing the segmentation output
+masks_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/input/HeLaNov2018_cmask" # set to None to avoid storing the segmentation output
 output_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/outputHeLaNov2018"
 
 # GENERAL
