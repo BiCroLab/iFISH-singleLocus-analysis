@@ -62,7 +62,7 @@ rule Automatic_3D_segmentation:
     threads: config['threads_per_job']
     shell: """
         mkdir -p {params.outdir}
-        tiff_auto3dseg -t {threads} {params.compressed} {params.labeled} {input.imdir} {params.outdir} &> {log}
+        tiff_auto3dseg -t {threads} {params.compressed} {params.labeled} {input.imdir} {params.outdir} -y &> {log}
     """
 
 rule Calculate_Lamina_Distance:
