@@ -27,7 +27,7 @@ k_sigma_population_selection: 3
 ndots:
   HAP1: 1
   IMR90: 2
-  HeLa: 4
+  HELA: 4
 dot_value_column_label: "Value"
 
 # PLOTS
