@@ -29,9 +29,7 @@ rule all:
         expand(("%s/rankings/ranks.{flag}.%dprobe.{suffix}.tsv" % (ORF, size)
             for size in config['rank_bin_sizes']), suffix = final_suffix, flag = config['probe_bed']),
         expand("%s/rankings/ranks.{flag}.chrom.{suffix}.tsv" % ORF,
-            suffix = final_suffix, flag = config['probe_bed']),
-        "dots.merged.noDiscardedChannels.G1selected.tsv",
-        "dots.merged.noDiscardedChannels.G1selected.brightest.tsv"
+            suffix = final_suffix, flag = config['probe_bed'])
 
 rule Find_out_of_focus:
     version: TIFF_FINDOOF_VERSION
