@@ -1,0 +1,126 @@
+# INPUT
+auto_userdots_folder: "/mnt/data/iFISH-singleLocus-analysis/input/auto_userdots"
+deconvolved_root_folder: "/mnt/data/iFISH-singleLocus-analysis/input/IMR90Oct2018_decon"
+metadata: "/mnt/data/iFISH-singleLocus-analysis/input/2018-09-13-iFISH-singleLocus-metadata.tsv"
+
+# OUTPUT
+masks_root_folder: "/mnt/data/iFISH-singleLocus-analysis/input/IMR90Oct2018_cmask" # set to None to avoid storing the segmentation output
+output_root_folder: "/mnt/data/iFISH-singleLocus-analysis/outputIMR90May2019"
+
+# GENERAL
+aspect: [300., 130., 130.]
+
+# LAMINA DISTANCE
+dilation: 5
+distance_type: "center_percentile"
+threads_per_job: 10
+mask_prefix: "cmask_"
+mask_compressed: True
+mask_labeled: False
+axis_fraction: 0.25
+discard_channels: ["a700", "ir800"]
+dilate_Z: True
+
+# MERGE & FILTERS
+metadata_delim: "\t"
+k_sigma_population_selection: 3
+ndots:
+  HAP1: 1
+  IMR90: 2
+  HeLa: 4
+dot_value_column_label: "Value"
+
+# PLOTS
+giemsa_path: "/mnt/data/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
+probe_path: "/mnt/data/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
+
+# RANKS
+rank_bin_sizes: [ 100000, 1000000, 10000000 ]
+probe_bed:
+  1Mbprobe: "/mnt/data/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.bed"
+
+# SAMPLES
+datasets: [
+  "iJC1041_20180223_001",
+  "iJC1042_20180224_001",
+  "iJC1043_20180227_001",
+  #"iJC1052_20180228_001",
+  "iJC1053_20180228_001",
+  "iJC1055_20180228_001",
+  "iJC1056_20180228_001",
+  "iJC1057_20180228_001",
+  "iJC1058_20180303_001",
+  "iJC1061_20180304_002",
+  #"iJC1062_20180305_002",
+  #"iJC1063_20180306_001",
+  "iJC1065_20180307_001",
+  "iJC1067_20180307_001",
+  "iJC1075_20180307_001",
+  "iJC1076_20180309_001",
+  "iJC1077_20180312_001",
+  #"iJC1079_20180313_001",
+  #"iJC1081_20180314_001",
+  "iJC793_20170823_001",
+  "iJC794_20170824_001",
+  "iJC796_20170828_001",
+  "iJC798_20170829_001",
+  "iJC798_20170829_002",
+  "iJC799_20170829_001",
+  #"iJC801_20170829_002",
+  "iJC802_20170831_001",
+  "iJC811_20170906_001",
+  "iJC812_20170907_001",
+  #"iJC814_20170911_001",
+  "iJC820_20170913_001",
+  "iJC821_20170913_001",
+  "iJC822_20170913_001",
+  #"iJC824_20170914_001",
+  #"iJC825_20170915_001",
+  #"iJC827_20170918_001",
+  "iJC829_20170918_001",
+  "iJC831_20170918_001",
+  #"iJC842_20170925_001",
+  "iJC847_20170927_001",
+  "iJC848_20170927_001",
+  #"iJC849_20170927_001",
+  #"iJC850_20170929_001",
+  "iJC927_20171201_001",
+  #"iJC938_20171212_001",
+  "iJC939_20171212_001",
+  "iJC940_20171212_001",
+  "iJC943_20171213_001",
+  "iJC949_20171214_001",
+  "iJC950_20171214_001",
+  "iJC951_20171215_001",
+  "iJC952_20171215_001",
+  "iJC953_20171215_001",
+  #"iJC954_20171218_001",
+  "iJC955_20171218_001",
+  "iJC956_20171218_001",
+  "iJC957_20171218_001",
+  "iJC958_20171220_001",
+  "iJC960_20171221_002",
+  "iJC961_20171228_003",
+  "iJC962_20171229_001",
+  "iJC963_20171229_001",
+  "iJC964_20171229_001",
+  "iJC965_20171230_001",
+  "iJC966_20180101_001",
+  "iJC967_20180112_001",
+  "iJC968_20180101_001",
+  "iJC969_20180112_001",
+  "iJC970_20180102_002",
+  "iJC971_20180107_001",
+  "iJC972_20171218_001",
+  "iJC979_20180111_001",
+  "iJC980_20180111_001",
+  "iJC985_20180118_001",
+  "iJC988_20180122_001",
+  "iJC989_20180124_001",
+  "iJC990_20180125_001",
+  "iJC991_20180125_001",
+  "iJC992_20180126_001",
+  "iJC993_20180126_001",
+  #"iJC994_20180129_001",
+  "iJC996_20180129_001"
+]

@@ -302,10 +302,10 @@ cat("Summary of #nuclei per dataset:\n")
 summary(unlist(by(tnuc, tnuc$dataset, nrow)))
 
 # Discard nuclei without dots
-tnuc = tnuc[tnuc$nuID %in% nuclei_wdots,]
-tcom = tcom[tcom$nuID %in% nuclei_wdots,]
-cat("Removed nuclei w/o dots.\n")
-cat(sprintf("Reduced to %d (%d) nuclei.\n", nrow(tnuc), nrow(tcom)))
+#tnuc = tnuc[tnuc$nuID %in% nuclei_wdots,]
+#tcom = tcom[tcom$nuID %in% nuclei_wdots,]
+#cat("Removed nuclei w/o dots.\n")
+#cat(sprintf("Reduced to %d (%d) nuclei.\n", nrow(tnuc), nrow(tcom)))
 
 cat("Summary of #nuclei per dataset:\n")
 summary(unlist(by(tnuc, tnuc$dataset, nrow)))

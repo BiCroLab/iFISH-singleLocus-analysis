@@ -1,11 +1,15 @@
 # INPUT
-auto_userdots_folder: "/mnt/data/iFISH-singleLocus-analysis/input/auto_userdots"
-deconvolved_root_folder: "/mnt/data/Imaging/decon"
-metadata: "/mnt/data/iFISH-singleLocus-analysis/input/2018-09-13-iFISH-singleLocus-metadata.tsv"
+#auto_userdots_folder: "/media/MiSo/iFISH-singleLocus-analysis/input/auto_userdots"
+#auto_userdots_folder: "/media/MiSo/iFISH-singleLocus-DOTTER/output/auto_userdots"
+auto_userdots_folder: "/media/MiSo/iFISH-singleLocus-DOTTER/output/auto_userdots_CAc"
+deconvolved_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/input/decon"
+metadata: "/media/MiSo/iFISH-singleLocus-analysis/input/2018-09-13-iFISH-singleLocus-metadata.tsv"
 
 # OUTPUT
-masks_root_folder: "/mnt/data/iFISH-singleLocus-analysis/input/cmask" # set to None to avoid storing the segmentation output
-output_root_folder: "/mnt/data/iFISH-singleLocus-analysis/output"
+masks_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/input/cmask" # set to None to avoid storing the segmentation output
+#output_root_folder: "/media/MiSo/iFISH-singleLocus-analysis/output"
+#output_root_folder: "/media/MiSo/iFISH-singleLocus-DOTTER/output/iFISH-singLoc-snakemake-rootOutput-preFitting"
+output_root_folder: "/media/MiSo/iFISH-singleLocus-DOTTER/output/iFISH-singLoc-snakemake-rootOutput-CAcorrected-preFitting"
 
 # GENERAL
 aspect: [300., 130., 130.]
@@ -31,14 +35,14 @@ ndots:
 dot_value_column_label: "pixel"
 
 # PLOTS
-giemsa_path: "/mnt/data/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
-probe_path: "/mnt/data/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
+giemsa_path: "/media/MiSo/iFISH-singleLocus-analysis/input/hg19.giemsa_bands.bed"
+probe_path: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.bed"
 
 # RANKS
 rank_bin_sizes: [ 100000, 1000000, 10000000 ]
 probe_bed:
-  1Mbprobe: "/mnt/data/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.bed"
-  1Mbprobe.transCorrected.HAP1.Philadelphia: "/mnt/data/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.transCorrected.HAP1.Philadelphia.bed"
+  1Mbprobe: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.bed"
+  1Mbprobe.transCorrected.HAP1.Philadelphia: "/media/MiSo/iFISH-singleLocus-analysis/input/tda_dna-unifish_oligopool_chr_spotting.size1Mbp.transCorrected.HAP1.Philadelphia.bed"
 
 # SAMPLES
 datasets: [

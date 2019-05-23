@@ -123,8 +123,7 @@ read_giemsa_for_ideogram = function(path, space_between_chrom = 5) {
         "#DDDDDD", "#9A9A9A", "#787878", "#555555", "#333333",
         "#FF0000", "#C4FFFC", "#AFE6FF")
     giemsa_levels = c(
-        "gneg", "gpos25", "gpos50", "gpos75", "gpos100",
-        "acen", "gvar", "stalk")
+        )
     data$value = factor(data$value, levels = giemsa_levels)
     names(giemsa_palette) = giemsa_levels
 
