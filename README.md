@@ -31,12 +31,6 @@ Create a subfolder in `input`, where you will place a folder for each dataset. T
 
 Create a subfolder in `input`, where you will place the automatically picked userDots tables generated with DOTTER. Each file should have the following name format: `<dataset>_auto_userdots.csv`. The absolute path to this folder should be specified in the `config.yaml` file as `auto_userdots_folder`.
 
-### Output
-
-#### ...
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus ullam, assumenda recusandae cumque commodi illo ut quae aliquam magnam repellendus eius impedit dolor, laborum veritatis, dolore, voluptatem quo. Nobis, possimus.
-
 ### Workflow
 
 ![DAG](snakemake/dag.svg)
